@@ -1,3 +1,4 @@
+import subprocess
 from configparser import ConfigParser
 from pathlib import Path
 import snowflake.connector as sf
@@ -53,9 +54,26 @@ class SnowflakeOps():
             print(e)
             return "failed"
 
+    def load_to_stage_with_snowsql(self):
+        try:
+            with open('./query/put.sql','r') as f:
+                records = f.readlines()
+
+            for query in records:
+                print(query)
+                subprocess.run("""snowsql \
+                                 --config=/Users/xxxx/snowflake/sf_ops/profile/dev.ini \
+                                 -o exit_on_error=true \
+                                 -q '{query}'""".format(query=query),
+                                   shell=True)
+        except Exception as e:
+            print(e)
+            return "failed"
+
 
 if __name__ == "__main__":
     sfops = SnowflakeOps()
-    conn = sfops.get_snowflake_connection()
-    result = sfops.load_to_stage(conn)
+    # conn = sfops.get_snowflake_connection()
+    # result = sfops.load_to_stage(conn)
+    result = sfops.load_to_stage_with_snowsql()
     print(result)
